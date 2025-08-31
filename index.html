@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Major Hydropower Plants in Eastern Canada</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+
+        .leaflet-tile-pane {
+            filter: grayscale(100%) invert(0.8) hue-rotate(180deg) brightness(1.2);
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #333;
+            font-size: 14px;
+            z-index: 1000;
+        }
+
+        .legend h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .legend-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid #ffffff;
+        }
+
+        .mega { background-color: #ff4757; }
+        .large { background-color: #3742fa; }
+        .medium { background-color: #2ed573; }
+        .small { background-color: #ffa502; }
+
+        .custom-popup {
+            font-family: Arial, sans-serif;
+            max-width: 300px;
+        }
+
+        .popup-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+
+        .popup-detail {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #34495e;
+        }
+
+        .popup-capacity {
+            font-weight: bold;
+            color: #e74c3c;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <div class="legend">
+        <h4>Hydropower Plant (HPP) Capacity</h4>
+        <div class="legend-item">
+            <div class="legend-dot mega"></div>
+            <span>Mega (≥4,000 MW)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot large"></div>
+            <span>Large (1,000-3,999 MW)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot medium"></div>
+            <span>Medium (500-999 MW)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot small"></div>
+            <span>Small (<500 MW)</span>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script>
+        // Initialize map with wide view of Eastern Canada (zoomed out another 10%)
+        const map = L.map('map').setView([48.0, -68.0], 5.4);
+
+        // Add OpenStreetMap basemap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 18
+        }).addTo(map);
+
+        // Custom marker function
+        function createMarker(capacity) {
+            let color, size;
+            
+            if (capacity >= 4000) {
+                color = '#ff4757'; // Red for mega plants
+                size = 15;
+            } else if (capacity >= 1000) {
+                color = '#3742fa'; // Blue for large plants  
+                size = 12;
+            } else if (capacity >= 500) {
+                color = '#2ed573'; // Green for medium plants
+                size = 10;
+            } else {
+                color = '#ffa502'; // Orange for smaller plants
+                size = 8;
+            }
+            
+            return L.circleMarker([0, 0], {
+                radius: size,
+                fillColor: color,
+                color: color,
+                weight: 0,
+                opacity: 1,
+                fillOpacity: 0.8
+            });
+        }
+
+        // Hydropower plants data for Eastern Canada
+        const plants = [
+            // Quebec - James Bay Complex
+            {
+                name: "Robert-Bourassa",
+                province: "Quebec",
+                capacity: 5616,
+                lat: 53.7835,
+                lng: -77.5323,
+                details: "World's largest underground power station"
+            },
+            {
+                name: "La Grande-2-A",
+                province: "Quebec", 
+                capacity: 2106,
+                lat: 53.7819,
+                lng: -77.5497,
+                details: "James Bay Project component"
+            },
+            {
+                name: "La Grande-4",
+                province: "Quebec",
+                capacity: 2779,
+                lat: 53.6167,
+                lng: -76.0833,
+                details: "La Grande River development"
+            },
+            {
+                name: "La Grande-3",
+                province: "Quebec",
+                capacity: 2418,
+                lat: 53.5333,
+                lng: -76.2833,
+                details: "La Grande complex"
+            },
+            
+            // Quebec - Manic Complex
+            {
+                name: "Manic-5 (Daniel-Johnson)",
+                province: "Quebec",
+                capacity: 2596,
+                lat: 50.4333,
+                lng: -68.7667,
+                details: "Multiple-arch buttress dam"
+            },
+            {
+                name: "Manic-5-PA",
+                province: "Quebec", 
+                capacity: 1596,
+                lat: 50.3333,
+                lng: -68.7000,
+                details: "Underground power station"
+            },
+            {
+                name: "Manic-3",
+                province: "Quebec",
+                capacity: 1326,
+                lat: 50.2167,
+                lng: -68.3333,
+                details: "Manic complex"
+            },
+            {
+                name: "Manic-2",
+                province: "Quebec",
+                capacity: 1148,
+                lat: 50.1167,
+                lng: -68.0000,
+                details: "Manicouagan River"
+            },
+            {
+                name: "Beauharnois",
+                province: "Quebec",
+                capacity: 1903,
+                lat: 45.3167,
+                lng: -73.9167,
+                details: "Saint Lawrence River"
+            },
+            {
+                name: "Carillon",
+                province: "Quebec",
+                capacity: 752,
+                lat: 45.5833,
+                lng: -74.3333,
+                details: "Ottawa River"
+            },
+
+            // Newfoundland & Labrador
+            {
+                name: "Churchill Falls",
+                province: "Newfoundland & Labrador",
+                capacity: 5428,
+                lat: 53.5167,
+                lng: -64.0833,
+                details: "Second largest in Canada"
+            },
+            {
+                name: "Bay d'Espoir",
+                province: "Newfoundland & Labrador",
+                capacity: 490,
+                lat: 47.8000,
+                lng: -55.8333,
+                details: "Central Newfoundland"
+            },
+
+            // Ontario  
+            {
+                name: "Sir Adam Beck I & II",
+                province: "Ontario",
+                capacity: 1977,
+                lat: 43.0833,
+                lng: -79.0500,
+                details: "Niagara Falls"
+            },
+            {
+                name: "R.H. Saunders",
+                province: "Ontario", 
+                capacity: 1045,
+                lat: 44.9833,
+                lng: -74.7333,
+                details: "Saint Lawrence River"
+            },
+            {
+                name: "Otto Holden",
+                province: "Ontario",
+                capacity: 484,
+                lat: 43.0667,
+                lng: -79.0667,
+                details: "Niagara pumped storage"
+            },
+
+            // New Brunswick
+            {
+                name: "Mactaquac",
+                province: "New Brunswick",
+                capacity: 668,
+                lat: 45.9333,
+                lng: -66.8833,
+                details: "Saint John River"
+            },
+            {
+                name: "Beechwood", 
+                province: "New Brunswick",
+                capacity: 113,
+                lat: 46.2500,
+                lng: -67.4167,
+                details: "Saint John River"
+            },
+
+            // Nova Scotia
+            {
+                name: "Wreck Cove",
+                province: "Nova Scotia",
+                capacity: 215,
+                lat: 46.7167,
+                lng: -60.6500,
+                details: "Cape Breton pumped storage"
+            },
+            {
+                name: "Annapolis Tidal",
+                province: "Nova Scotia",
+                capacity: 20,
+                lat: 44.7500,
+                lng: -65.5167,
+                details: "Tidal power plant"
+            }
+        ];
+
+        // Add markers for each plant
+        plants.forEach(plant => {
+            const marker = createMarker(plant.capacity);
+            marker.setLatLng([plant.lat, plant.lng]);
+            
+            const popupContent = `
+                <div class="custom-popup">
+                    <div class="popup-title">${plant.name}</div>
+                    <div class="popup-detail popup-capacity">Capacity: ${plant.capacity.toLocaleString()} MW</div>
+                    <div class="popup-detail"><strong>Province:</strong> ${plant.province}</div>
+                    <div class="popup-detail">${plant.details}</div>
+                </div>
+            `;
+            
+            marker.bindPopup(popupContent, {
+                maxWidth: 300,
+                className: 'custom-popup'
+            });
+            
+            marker.addTo(map);
+        });
+    </script>
+</body>
+</html>
